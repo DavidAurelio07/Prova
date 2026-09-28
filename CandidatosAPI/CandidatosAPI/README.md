@@ -9,8 +9,8 @@ Aplicação Spring Boot que lê o CSV de candidatos do TSE (eleições de 2026, 
 - **Index**: A tela é dividida em duas colunas. À esquerda fica o painel de filtros: gênero (botões de opção), escolaridade (lista de seleção), faixa etária (idade mínima e máxima) e os botões **Filtrar** e **Limpar**. À direita aparecem a contagem de candidatos encontrados e a lista de cards horizontais, cada um com a foto oficial, nome de urna, número, cargo, partido, etiquetas de gênero e idade, escolaridade e ocupação. Em telas estreitas, o painel de filtros vai para cima da lista.
 
 | <img src="prints/index.png" alt="Index" width="1000"/> |
-|:----------------------------------------------------:|
-|                        Index                         |
+| :----------------------------------------------------: |
+|                         Index                          |
 
 ---
 
@@ -88,23 +88,23 @@ Aplicação Spring Boot que lê o CSV de candidatos do TSE (eleições de 2026, 
 
 Responsável por carregar, tratar e filtrar os dados dos candidatos.
 
-| Função | O que faz |
-|---|---|
-| `carregarCsv()` | Lê o CSV uma única vez na inicialização (`@PostConstruct`), popula a lista de candidatos em memória e ordena por nome de urna. |
-| `resolverFotosPorCpf()` | Para candidatos sem foto própria (ex.: titular de Senador), tenta reaproveitar a foto de outra candidatura da mesma pessoa (mesmo nome + número). |
-| `fotoExisteNoDisco()` | Verifica se o arquivo `FMG<sqCandidato>_div.jpg` realmente existe no classpath. |
-| `filtrarPerfil()` | Filtra a lista por gênero, escolaridade e/ou faixa etária (idade mínima e máxima). Qualquer parâmetro vazio é ignorado. |
-| `listarGeneros()` / `listarEscolaridades()` | Retornam os valores distintos usados para montar os botões de opção de gênero e o `<select>` de escolaridade. |
-| `listarTodos()` | Retorna a lista completa de candidatos. |
-| `filtrar()` / `listarCargos()` / `listarPartidos()` | Filtros por cargo, partido e texto do projeto anterior. *Não são usados neste projeto.* |
+| Função                                              | O que faz                                                                                                                                         |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `carregarCsv()`                                     | Lê o CSV uma única vez na inicialização (`@PostConstruct`), popula a lista de candidatos em memória e ordena por nome de urna.                    |
+| `resolverFotosPorCpf()`                             | Para candidatos sem foto própria (ex.: titular de Senador), tenta reaproveitar a foto de outra candidatura da mesma pessoa (mesmo nome + número). |
+| `fotoExisteNoDisco()`                               | Verifica se o arquivo `FMG<sqCandidato>_div.jpg` realmente existe no classpath.                                                                   |
+| `filtrarPerfil()`                                   | Filtra a lista por gênero, escolaridade e/ou faixa etária (idade mínima e máxima). Qualquer parâmetro vazio é ignorado.                           |
+| `listarGeneros()` / `listarEscolaridades()`         | Retornam os valores distintos usados para montar os botões de opção de gênero e o `<select>` de escolaridade.                                     |
+| `listarTodos()`                                     | Retorna a lista completa de candidatos.                                                                                                           |
+| `filtrar()` / `listarCargos()` / `listarPartidos()` | Filtros por cargo, partido e texto do projeto anterior. _Não são usados neste projeto._                                                           |
 
 ---
 
 ## 🎮 `CandidatosTseController`
 
-| Endpoint | Método | Descrição |
-|---|---|---|
-| `/` | `GET` | Tela única da aplicação. Aceita os parâmetros opcionais `genero`, `escolaridade`, `idadeMin` e `idadeMax`. Chama `filtrarPerfil()`, envia as opções dos filtros (`listarGeneros()` e `listarEscolaridades()`), devolve ao `Model` os valores atualmente selecionados e retorna a view `index`. |
+| Endpoint | Método | Descrição                                                                                                                                                                                                                                                                                      |
+| -------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`      | `GET`  | Tela única da aplicação. Aceita os parâmetros opcionais `genero`, `escolaridade`, `idadeMin` e `idadeMax`. Chama `filtrarPerfil()`, envia as opções dos filtros (`listarGeneros()` e `listarEscolaridades()`), devolve ao `Model` os valores atualmente selecionados e retorna a view `index`. |
 
 Exemplo de URL com todos os filtros:
 
@@ -114,25 +114,25 @@ http://localhost:8080/?genero=FEMININO&escolaridade=SUPERIOR+COMPLETO&idadeMin=3
 
 ### Parâmetros
 
-| Parâmetro | Tipo | Exemplo | Regra |
-|---|---|---|---|
-| `genero` | `String` | `FEMININO` | Compara com `getGenero()` (ignora maiúsculas/minúsculas). Vazio = todos. |
-| `escolaridade` | `String` | `SUPERIOR COMPLETO` | Compara com `getGrauInstrucao()`. Vazio = todas. |
-| `idadeMin` | `Integer` | `30` | Mantém quem tem `getIdade() >= idadeMin`. |
-| `idadeMax` | `Integer` | `45` | Mantém quem tem `getIdade() <= idadeMax`. |
+| Parâmetro      | Tipo      | Exemplo             | Regra                                                                    |
+| -------------- | --------- | ------------------- | ------------------------------------------------------------------------ |
+| `genero`       | `String`  | `FEMININO`          | Compara com `getGenero()` (ignora maiúsculas/minúsculas). Vazio = todos. |
+| `escolaridade` | `String`  | `SUPERIOR COMPLETO` | Compara com `getGrauInstrucao()`. Vazio = todas.                         |
+| `idadeMin`     | `Integer` | `30`                | Mantém quem tem `getIdade() >= idadeMin`.                                |
+| `idadeMax`     | `Integer` | `45`                | Mantém quem tem `getIdade() <= idadeMax`.                                |
 
 > Candidatos com data de nascimento inválida têm `getIdade() == -1` e ficam de fora sempre que algum filtro de idade é usado.
 
 ### Atributos enviados ao `Model`
 
-| Atributo | Conteúdo |
-|---|---|
-| `candidatos` | Lista filtrada |
-| `totalEncontrado` | Tamanho da lista filtrada |
-| `generos` | `listarGeneros()` (para os botões de opção) |
-| `escolaridades` | `listarEscolaridades()` (para o `<select>`) |
-| `generoSelecionado` / `escolaridadeSelecionada` | Valores atuais do filtro (`""` quando não informados) |
-| `idadeMin` / `idadeMax` | Valores atuais da faixa etária (`null` quando não informados) |
+| Atributo                                        | Conteúdo                                                      |
+| ----------------------------------------------- | ------------------------------------------------------------- |
+| `candidatos`                                    | Lista filtrada                                                |
+| `totalEncontrado`                               | Tamanho da lista filtrada                                     |
+| `generos`                                       | `listarGeneros()` (para os botões de opção)                   |
+| `escolaridades`                                 | `listarEscolaridades()` (para o `<select>`)                   |
+| `generoSelecionado` / `escolaridadeSelecionada` | Valores atuais do filtro (`""` quando não informados)         |
+| `idadeMin` / `idadeMax`                         | Valores atuais da faixa etária (`null` quando não informados) |
 
 ---
 
@@ -148,7 +148,3 @@ Representa uma linha do CSV do TSE, já traduzida para os campos usados na tela 
 - [opencsv no Maven Repository](https://mvnrepository.com/artifact/com.opencsv/opencsv)
 
 ---
-
-## 📄 Licença
-
-Este projeto está licenciado sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
